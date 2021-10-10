@@ -1,12 +1,83 @@
 import React, {useState, useEffect} from 'react'
-import {View, Text, TextInput, FlatList, StyleSheet, useWindowDimensions, Image} from 'react-native'
+import {View, Text, TextInput, FlatList, StyleSheet, useWindowDimensions, Image, Button} from 'react-native'
+import firebase from 'firebase';
 
-export default function Post(props) {
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux'
+import {fetchUsersData} from '../../redux/actions/index'
+
+require("firebase/firestore")
+require("firebase/firebase-storage")
+
+function Comments(props) {
     const [comments, setComments] = useState([]);
-    const [users, setUsers] = useState([]);
+    const [comment, setComment] = useState("");
+    const [postId, setPostId] = useState("");
+    const [refresh, setRefresh] = useState(false);
 
 
     const imageWidth = Math.floor(useWindowDimensions().width);
+    useEffect(() => {
+        console.log(props.route.params.post.user.uid);
+        function matchUserToComment(comments){
+            for( let i = 0; i < comments.length ; i++){
+                if(comments[i].hasOwnProperty('user')){
+                    continue;
+                }
+                const user = props.users.find(x => x.uid === comments[i].userCommentId);
+                if(user === undefined){
+                    props.fetchUsersData(comments[i].userCommentId, false);
+                }
+                else{
+                    comments[i].userCommentInfo = user;
+                }
+            }
+            setComments(comments);
+            
+        }
+
+        setPostId(props.route.params.post.id);  
+        // access to the dtb 
+        firebase.firestore()
+        .collection("posts")
+        .doc(props.route.params.post.user.uid)
+        .collection("userPosts")
+        .doc(props.route.params.post.id)
+        .collection("comments")
+        .orderBy("timeComment", "desc")
+        .get()
+        .then((snapshot) => {
+            if(!snapshot.empty){
+                let postComments = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    return { id, ...data}
+                })
+                matchUserToComment(postComments);
+            }
+            
+        })
+
+        setRefresh(false);
+
+
+    },[refresh,props.route.params.post.id,props.users]) 
+    const createComment = () => {
+        firebase.firestore()
+        .collection("posts")
+        .doc(props.route.params.post.user.uid)
+        .collection("userPosts")
+        .doc(props.route.params.post.id)
+        .collection("comments")
+        .add({
+            text: comment,
+            userCommentId: firebase.auth().currentUser.uid,
+            timeComment: firebase.firestore.FieldValue.serverTimestamp(),
+        })
+        setRefresh(true);
+
+    }
+
     return (
         <View style = {styles.container}>
             <View style = {styles.postContainer}>  
@@ -14,13 +85,46 @@ export default function Post(props) {
                 <View style = {styles.captionContainer}>
                     <Text style = {styles.usernameText}>{props.route.params.post.user.name}</Text> 
                     <Text>{props.route.params.post.caption}</Text>
-
                 </View>
+                <View style = {styles.commentContainer}>
+                    <TextInput 
+                        style = {styles.commentTextInput}
+                        placeholder ="Write a comment here..." 
+                        onChangeText = {(text) => setComment(text)}
+                        onSubmitEditing = {(event) => console.log("aaaaaa")}
+                    />
+                    <Button 
+                        title = "Upload"
+                        onPress = {() => createComment()}
+                    />
+                </View>
+                <FlatList 
+                    numColumns = {1}
+                    horizontal = {false}
+                    data = {comments}
+                    renderItem = {({item}) => 
+                        <View style = {styles.userCommentContainer}>
+                            {item.userCommentInfo !== undefined ? 
+                                <Text style = {styles.usernameText}>{item.userCommentInfo.name}</Text>
+                            : <Text style = {styles.usernameText}>{item.userCommentId}</Text>}
+                            <Text>{item.text}</Text>
+                        </View>
+                        
+                
+                }
+                />
             </View>
             
         </View>
     )
 }
+
+const mapStateToProps = (store) => ({
+    users : store.usersState.users,
+
+})
+const mapDispatchToProps = (dispatch) => bindActionCreators({fetchUsersData}, dispatch);
+export default connect(mapStateToProps,mapDispatchToProps)(Comments);
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -32,14 +136,33 @@ const styles = StyleSheet.create({
 
     },
     captionContainer: {
-        flex: 1,
         flexDirection : 'row',
         marginLeft: 5,
         fontSize:16,
+        marginVertical: 10,
     },
     usernameText: {
         fontWeight: 'bold',
         marginRight: 8,
         
+    },
+    commentContainer: {
+        flexDirection: 'row',
+        marginVertical: 5,
+        paddingLeft: 8,
+        paddingRight: 8,
+
+    },
+    commentTextInput: {
+
+        backgroundColor: '#fafafa',
+        borderColor: '#e0e0e0',
+        flex: 1,
+        paddingLeft: 10,
+        borderWidth: 2,
+        borderRadius: 20,
+    },
+    userCommentContainer: {
+        flexDirection: 'row',
     },
 });

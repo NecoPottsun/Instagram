@@ -14,9 +14,9 @@ export function fetchUser() {
         .get()
         .then((snapshot) => {
             if(snapshot.exists){
-                const id = snapshot.id;
-                dispatch({type: USER_STATE_CHANGE, currentUser: {...snapshot.data(), id}});
-                console.log(id);
+                const uid = snapshot.id;
+                dispatch({type: USER_STATE_CHANGE, currentUser: {...snapshot.data(), uid}});
+                console.log(uid);
             }
             else{
                 console.log("cannot retrieve user");
@@ -35,7 +35,7 @@ export function fetchUserPosts() {
         .get()
         .then((snapshot) => {
             let posts = snapshot.docs.map(doc => {
-                const user = getState().userState.currentUser
+                const user = getState().userState.currentUser;
                 const data = doc.data();
                 const id = doc.id;
                 return { id , ...data, user};
@@ -58,12 +58,12 @@ export function fetchUserFollowing() {
                 
                 dispatch({type: USER_FOLLOWING_STATE_CHANGE, following});
                 for(let i = 0; i < following.length; i++){
-                    dispatch(fetchUsersData(following[i])); // call a function in redux use dispatch(function())
+                    dispatch(fetchUsersData(following[i],true)); // call a function in redux use dispatch(function())
                 }
         })
     })
 }
-export function fetchUsersData(uid) {
+export function fetchUsersData(uid, getPosts) {
    return((dispatch, getState) => {
        const found = getState().usersState.users.some(el => el.uid === uid);
 
@@ -76,12 +76,15 @@ export function fetchUsersData(uid) {
                 let user = snapshot.data();
                 user.uid = snapshot.id;
                 dispatch({type: USERS_DATA_STATE_CHANGE, user});
-                dispatch(fetchUsersFollowingPosts(user.uid));
+                if(getPosts){
+                    dispatch(fetchUsersFollowingPosts(user.uid));
+                }
             }
             else{
                 console.log("cannot retrieve user");
             }
         })
+
        }
    })
 }

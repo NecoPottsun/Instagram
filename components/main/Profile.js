@@ -18,10 +18,12 @@ function Profile(props) {
     const {currentUser, posts} = props;
     const post = {...posts};
  
-    console.log(post);
+
     if(props.route.params.uid === firebase.auth().currentUser.uid){
       setUser(currentUser);
       setUserPosts(posts);
+
+ 
     }
     else{
       firebase.firestore()
@@ -45,18 +47,24 @@ function Profile(props) {
         .then((snapshot) => {
           let posts = snapshot.docs.map(doc => {
             const data = doc.data();
-            const id = doc.id;
-            return { id , ... data };
+            const uid = doc.id;
+            return { uid , ... data };
           })
           setUserPosts(posts);
+          
         })
+       
+        
     }
+    
     if(props.following.indexOf(props.route.params.uid) > -1){
       setFollowing(true);
     }
     else{
       setFollowing(false);
     }
+
+   
   }, [props.route.params.uid, props.following]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
   
   const onUnfollow = () => {
@@ -115,6 +123,7 @@ function Profile(props) {
             data = {userPosts}
             renderItem = {({item}) => 
               <View style = {styles.containerImage}> 
+                {console.log(item)}
                 <TouchableOpacity onPress = {() => props.navigation.navigate('Comments', {post: item})}>
                   <Image 
                     style = {[styles.image, {width: imageWidth, height: imageWidth}]} // must draw the image with width and height

@@ -1,3 +1,4 @@
+import { mdiCompassOutline } from '@mdi/js';
 import { NavigationContainer } from '@react-navigation/native';
 import React, {useState, useEffect} from 'react'
 import {View, Text, StyleSheet, TouchableOpacity, Image, FlatList, useWindowDimensions} from 'react-native'
@@ -10,7 +11,8 @@ function Feed(props) {
   const [posts, setPosts] = useState([]);
   useEffect(() => {
     let posts = [];
-    if(props.usersLoaded == props.following.length){
+    console.log(props.following.length)
+    if(props.usersFollowingLoaded == props.following.length){
       for(let i = 0; i < props.following.length; i++){
         console.log(props.following[i]);
         const user = props.users.find(el => el.uid === props.following[i]);
@@ -24,13 +26,13 @@ function Feed(props) {
 
       setPosts(posts)
       console.log(posts);  
-      for(let i = 0; i < posts.length; i++){
+      // for(let i = 0; i < posts.length; i++){
       
-        console.log(posts[i].user.name + " : " +posts[i].caption + " : "+posts[i].creation.toDate())
-      }
+      //   console.log(posts[i].user.name + " : " +posts[i].caption + " : "+posts[i].creation.toDate())
+      // }
 
     }
-  }, [props.usersLoaded]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
+  }, [props.usersFollowingLoaded]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
   
 
 
@@ -68,7 +70,7 @@ const mapStateToProps = (store) => ({
   currentUserPosts : store.userState.posts,
   following: store.userState.following,
   users: store.usersState.users,
-  usersLoaded: store.usersState.usersLoaded,
+  usersFollowingLoaded: store.usersState.usersFollowingLoaded,
 })
 
 // not calling anyaction so mapDispatchToProps = null
