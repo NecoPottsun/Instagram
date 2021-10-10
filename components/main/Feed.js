@@ -11,28 +11,23 @@ function Feed(props) {
   const [posts, setPosts] = useState([]);
   useEffect(() => {
     let posts = [];
-    console.log(props.following.length)
-    if(props.usersFollowingLoaded == props.following.length){
-      for(let i = 0; i < props.following.length; i++){
-        console.log(props.following[i]);
-        const user = props.users.find(el => el.uid === props.following[i]);
-        if(user != undefined){
-          posts = [...posts, ...user.posts]
-        }
-      }
-      posts.sort(function(y,x) {
+    console.log(props.feed);
+    // console.log(props.following.length)
+    if(props.usersFollowingLoaded == props.following.length && props.following.length !== 0){
+
+      props.feed.sort(function(y,x) {
         return x.creation.toDate() - y.creation.toDate();
       })
 
-      setPosts(posts)
-      console.log(posts);  
+      setPosts(props.feed)
+      // console.log(props.feed);  
       // for(let i = 0; i < posts.length; i++){
       
       //   console.log(posts[i].user.name + " : " +posts[i].caption + " : "+posts[i].creation.toDate())
       // }
 
     }
-  }, [props.usersFollowingLoaded]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
+  }, [props.usersFollowingLoaded, props.feed]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
   
 
 
@@ -69,7 +64,7 @@ const mapStateToProps = (store) => ({
   currentUser: store.userState.currentUser,
   currentUserPosts : store.userState.posts,
   following: store.userState.following,
-  users: store.usersState.users,
+  feed: store.usersState.feed,
   usersFollowingLoaded: store.usersState.usersFollowingLoaded,
 })
 

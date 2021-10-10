@@ -1,4 +1,4 @@
-import {USER_STATE_CHANGE, USER_POST_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE, USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA} from '../constants/index';
+import {USER_STATE_CHANGE, USER_POST_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE, USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA,USERS_LIKES_STATE_CHANGE} from '../constants/index';
 import firebase from 'firebase';
 
 require('firebase/firestore')
@@ -110,10 +110,42 @@ export function fetchUsersFollowingPosts(uid) {
                     const id = doc.id;
                     return { id , ...data, user};
                 })
+                for(let i = 0; i < posts.length; i++){
+                    dispatch(fetchUsersFollowingLikes(uid, posts[i].id))
+                }
                 console.log(posts);
                 dispatch({type: USERS_POSTS_STATE_CHANGE, posts ,uid});
                 console.log(getState());
             }
+
+        })
+    })
+}
+export function fetchUsersFollowingLikes(uid, postId) {
+    return((dispatch,getState) => {
+        firebase.firestore().collection("posts")
+        .doc(uid)
+        .collection("userPosts")
+        .doc(postId)
+        .collection("likes")
+        .doc(firebase.auth().currentUser.uid) 
+        .onSnapshot((snapshot) => {
+            
+            // if(snapshot.docs[0] === undefined){
+                
+                
+            // }
+            // else{
+              //  const postId = snapshot.docs[0].ref.path.split('/')[3];
+                const postId =  snapshot.ref.path.split('/')[3];
+                let currentUserLike = false;
+                if(snapshot.exists){ // if the currentUser id is inside the firestore to know that this current person had liked the current post
+                    currentUserLike = true;
+                }
+                // console.log("postID: " + postId + " currentUserLike: " + currentUserLike)
+                dispatch({type: USERS_LIKES_STATE_CHANGE, postId ,currentUserLike});
+                console.log(getState());
+            // }
 
         })
     })
