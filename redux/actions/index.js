@@ -130,23 +130,14 @@ export function fetchUsersFollowingLikes(uid, postId) {
         .collection("likes")
         .doc(firebase.auth().currentUser.uid) 
         .onSnapshot((snapshot) => {
-            
-            // if(snapshot.docs[0] === undefined){
-                
-                
-            // }
-            // else{
-              //  const postId = snapshot.docs[0].ref.path.split('/')[3];
-                const postId =  snapshot.ref.path.split('/')[3];
-                let currentUserLike = false;
-                if(snapshot.exists){ // if the currentUser id is inside the firestore to know that this current person had liked the current post
-                    currentUserLike = true;
-                }
-                // console.log("postID: " + postId + " currentUserLike: " + currentUserLike)
-                dispatch({type: USERS_LIKES_STATE_CHANGE, postId ,currentUserLike});
-                console.log(getState());
-            // }
-
+            const postId =  snapshot.ref.path.split('/')[3];
+            let currentUserLike = false;
+            if(snapshot.exists){ // if the currentUser id is inside the firestore to know that this current person had liked the current post
+                currentUserLike = true;
+            }
+            // console.log("postID: " + postId + " currentUserLike: " + currentUserLike)
+            dispatch({type: USERS_LIKES_STATE_CHANGE, postId ,currentUserLike});
+            // console.log(getState());
         })
     })
 }
