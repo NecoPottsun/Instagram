@@ -11,17 +11,20 @@ export default function Search(props) {
   const [users, setUsers] = useState([]);
 
   const fetchUsers = (search) => {
+    console.log(search);
     firebase.firestore()
     .collection('users')
-    .where('name' , '>=' , search)
+    .where('name' , '==' , search)
     .get()
     .then((snapshot) => {
       let users = snapshot.docs.map(doc => {
         const data = doc.data();
         const id = doc.id;
+        console.log({id, ...data})
         return {id , ...data}
 
       });
+      console.log(users);
       setUsers(users);
     })
   }
