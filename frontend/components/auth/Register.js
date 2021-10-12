@@ -20,7 +20,7 @@ export class Register extends Component {
         .then((result) => {
             firebase.firestore().collection("users")
             .doc(firebase.auth().currentUser.uid)
-            .set({email, name}); // because {...} is an object and .set(object)
+            .set({email, name}, {username:""},{website:""},{bio:""},{avatarURL: ""}); // because {...} is an object and .set(object)
             console.log(result)
         }).catch((error) => {  
             console.log(error);

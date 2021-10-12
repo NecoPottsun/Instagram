@@ -6,6 +6,7 @@ import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import rootReducer from './redux/reducers';
 import thunk from 'redux-thunk';
+import { IconButton, Colors } from 'react-native-paper';
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
 
@@ -20,6 +21,7 @@ import MainScreen from './components/Main';
 import AddScreen from './components/main/Add';
 import SaveScreen from './components/main/Save';
 import CommentsScreen from './components/main/Comments';
+import EditScreen from './components/main/Edit';
 
 const Stack = createNativeStackNavigator();
 
@@ -83,6 +85,7 @@ export class App extends Component {
               <Stack.Screen name = "Add" component={AddScreen} navigation = {this.props.navigation}/>
               <Stack.Screen name = "Save" component={SaveScreen}/>
               <Stack.Screen name = "Comments" component={CommentsScreen}/>
+              <Stack.Screen name = "Edit" component = {EditScreen} navigation = {this.props.navigation}/>
             </Stack.Navigator>
           </NavigationContainer>
         </Provider>

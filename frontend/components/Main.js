@@ -91,7 +91,7 @@ export class Main extends Component {
                     listeners = {({ navigation }) => ({
                         tabPress: event => {
                             event.preventDefault();
-                            navigation.navigate("Profile" , {uid: firebase.auth().currentUser.uid});
+                            navigation.navigate("Profile" , {uid: firebase.auth().currentUser.uid, refresh: true});
                         }
                     })} 
                     options= {{

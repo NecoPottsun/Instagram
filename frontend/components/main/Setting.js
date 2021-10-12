@@ -4,18 +4,18 @@ import { useDeviceOrientation } from '@react-native-community/hooks';
 import firebase from 'firebase'
 
 
-export default function Setting() {
+export default function Setting({navigation}) {
   const {landscape} = useDeviceOrientation();
   const onLogout = () => {
     firebase.auth().signOut();
   }
   return (
       <View style={styles.container}>
-        {/* <View style = {styles.banner}>
-          <Text style = {[styles.headerText, {paddingLeft: landscape ? '2%' : '5%', paddingVertical: landscape ? '' : '5%',}]}>Setting</Text>
-        </View> */}
-        <TouchableOpacity style= {styles.logoutButton}onPress = {() => onLogout()}>
-          <Text style = {styles.logoutText}>Log out</Text>
+        <TouchableOpacity style= {styles.button} onPress = {() => navigation.navigate('Edit')}>
+          <Text style = {styles.functionText}>Edit your info</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style= {styles.button} onPress = {() => onLogout()}>
+          <Text style = {styles.functionText}>Log out</Text>
         </TouchableOpacity>
       </View>
     )
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
       flex: 1,
       justifyContent: 'flex-start',
       alignItems: 'baseline',
-      flexDirection: 'row',
+      flexDirection: 'column',
     },
     banner:{
       backgroundColor: '#ffffff',
@@ -39,11 +39,10 @@ const styles = StyleSheet.create({
       color: '#423f3f',
       textAlign:'center',
     },
-    logoutButton: {
-      flex: 1, 
-      margin: 20,
+    button: {
+      margin: 10,
     },
-    logoutText: {
+    functionText: {
       fonSize: 16,
       fontWeight: "bold",
       color: "blue",

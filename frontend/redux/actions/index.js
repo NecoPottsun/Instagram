@@ -9,19 +9,28 @@ export function fetchClearData(){
 }
 export function fetchUser() {
     return((dispatch) => {
-        firebase.firestore().collection("users")
-        .doc(firebase.auth().currentUser.uid)
-        .get()
-        .then((snapshot) => {
-            if(snapshot.exists){
-                const uid = snapshot.id;
-                dispatch({type: USER_STATE_CHANGE, currentUser: {...snapshot.data(), uid}});
-                console.log(uid);
-            }
-            else{
-                console.log("cannot retrieve user");
-            }
-        })
+        // firebase.firestore().collection("users")
+        // .doc(firebase.auth().currentUser.uid)
+        // .get()
+        // .then((snapshot) => {
+        //     if(snapshot.exists){
+        //         const uid = snapshot.id;
+        //         dispatch({type: USER_STATE_CHANGE, currentUser: {...snapshot.data(), uid}});
+        //         console.log(uid);
+        //     }
+        //     else{
+        //         console.log("cannot retrieve user");
+        //     }
+        // })
+        firebase.firestore()
+            .collection("users")
+            .doc(firebase.auth().currentUser.uid)
+            .onSnapshot((snapshot) => {
+                if(snapshot.exists){
+                    const uid = snapshot.id;
+                    dispatch({type: USER_STATE_CHANGE, currentUser: {...snapshot.data(), uid}});
+                }
+            })
     })
 }
 
@@ -32,8 +41,7 @@ export function fetchUserPosts() {
         .doc(firebase.auth().currentUser.uid)
         .collection("userPosts")
         .orderBy("creation", "asc")
-        .get()
-        .then((snapshot) => {
+        .onSnapshot((snapshot) => {
             let posts = snapshot.docs.map(doc => {
                 const user = getState().userState.currentUser;
                 const data = doc.data();
@@ -54,12 +62,12 @@ export function fetchUserFollowing() {
             let following = snapshot.docs.map(doc => {
                 const id = doc.id;
                 return id;
-                })
+            })
                 
-                dispatch({type: USER_FOLLOWING_STATE_CHANGE, following});
-                for(let i = 0; i < following.length; i++){
-                    dispatch(fetchUsersData(following[i],true)); // call a function in redux use dispatch(function())
-                }
+            dispatch({type: USER_FOLLOWING_STATE_CHANGE, following});
+            for(let i = 0; i < following.length; i++){
+                dispatch(fetchUsersData(following[i],true)); // call a function in redux use dispatch(function())
+            }
         })
     })
 }
@@ -68,23 +76,23 @@ export function fetchUsersData(uid, getPosts) {
        const found = getState().usersState.users.some(el => el.uid === uid);
 
        if(!found){
-        firebase.firestore().collection("users")
-        .doc(uid)
-        .get()
-        .then((snapshot) => {
-            if(snapshot.exists){
-                let user = snapshot.data();
-                user.uid = snapshot.id;
-                dispatch({type: USERS_DATA_STATE_CHANGE, user});
-                if(getPosts){
-                    dispatch(fetchUsersFollowingPosts(user.uid));
+        firebase.firestore()
+            .collection("users")
+            .doc(uid)
+            .onSnapshot((snapshot) => {
+                if(snapshot.exists){
+                    let user = snapshot.data();
+                    user.uid = snapshot.id;
+                    dispatch({type: USERS_DATA_STATE_CHANGE, user});
+                    if(getPosts){
+                        dispatch(fetchUsersFollowingPosts(user.uid));
+                    }
+                    
                 }
-            }
-            else{
-                console.log("cannot retrieve user");
-            }
-        })
-
+                else{
+                    console.log("cannot retrieve user");
+                }
+            })
        }
    })
 }
@@ -94,11 +102,8 @@ export function fetchUsersFollowingPosts(uid) {
         .doc(uid)
         .collection("userPosts")
         .orderBy("creation", "asc")
-        .get()
-        .then((snapshot) => {
+        .onSnapshot((snapshot) => {
             if(snapshot.docs[0] === undefined){
-                
-                
             }
             else{
                 const uid = snapshot.docs[0].ref.path.split('/')[1];
@@ -139,5 +144,16 @@ export function fetchUsersFollowingLikes(uid, postId) {
             dispatch({type: USERS_LIKES_STATE_CHANGE, postId ,currentUserLike});
             // console.log(getState());
         })
+    })
+}
+export function fetchFollowers(uid){
+    return((dispatch, getState) => {
+        firebase.firestore()
+            .collection("following")
+            .forEach((doc) => {
+                doc.collection("userFollowing").forEach((doc) => {
+                    console.log(doc);
+                })
+            })
     })
 }
