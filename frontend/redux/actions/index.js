@@ -1,4 +1,4 @@
-import {USER_STATE_CHANGE, USER_POST_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE, USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA,USERS_LIKES_STATE_CHANGE} from '../constants/index';
+import {USER_STATE_CHANGE, USER_POST_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE,USER_FOLLOWERS_STATE_CHANGE,USERS_FOLLOWERS_STATE_CHANGE ,USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA,USERS_LIKES_STATE_CHANGE} from '../constants/index';
 import firebase from 'firebase';
 
 require('firebase/firestore')
@@ -71,12 +71,27 @@ export function fetchUserFollowing() {
         })
     })
 }
-export function fetchUsersData(uid, getPosts) {
-   return((dispatch, getState) => {
-       const found = getState().usersState.users.some(el => el.uid === uid);
-
-       if(!found){
+export function fetchUserFollowers(){
+    return((dispatch)=> {
         firebase.firestore()
+            .collection("following")
+            .doc(firebase.auth().currentUser.uid)
+            .collection("userFollower")
+            .onSnapshot((snapshot) => {
+                let followers = snapshot.docs.map(doc => {
+                    const id = doc.id;
+                    return id;
+                })
+                dispatch({type: USER_FOLLOWERS_STATE_CHANGE, followers});
+            })
+    })
+}
+export function fetchUsersData(uid, getPosts) {
+    return((dispatch, getState) => {
+        const found = getState().usersState.users.some(el => el.uid === uid);
+        
+        if(!found){
+            firebase.firestore()
             .collection("users")
             .doc(uid)
             .onSnapshot((snapshot) => {
@@ -93,8 +108,8 @@ export function fetchUsersData(uid, getPosts) {
                     console.log("cannot retrieve user");
                 }
             })
-       }
-   })
+        }
+    })
 }
 export function fetchUsersFollowingPosts(uid) {
     return((dispatch,getState) => {
@@ -107,7 +122,7 @@ export function fetchUsersFollowingPosts(uid) {
             }
             else{
                 const uid = snapshot.docs[0].ref.path.split('/')[1];
-                console.log({snapshot, uid});
+                // console.log({snapshot, uid});
                 const user = getState().usersState.users.find(el => el.uid === uid);
     
                 let posts = snapshot.docs.map(doc => {
@@ -118,12 +133,36 @@ export function fetchUsersFollowingPosts(uid) {
                 for(let i = 0; i < posts.length; i++){
                     dispatch(fetchUsersFollowingLikes(uid, posts[i].id))
                 }
-                console.log(posts);
+                // console.log(posts);
                 dispatch({type: USERS_POSTS_STATE_CHANGE, posts ,uid});
-                console.log(getState());
+                // console.log(getState());
             }
-
+            
         })
+    })
+}
+export function fetchUsersFollowers(uid){
+    return((dispatch, getState)=> {
+        firebase.firestore()
+            .collection("following")
+            .doc(uid)
+            .collection("userFollower")
+            .onSnapshot((snapshot) => {
+                if(snapshot.docs[0] === undefined){
+
+                }
+                else{
+                    const uid = snapshot.docs[0].ref.path.split('/')[1];
+                    console.log({snapshot,uid});
+                    const user = getState().usersState.users.find(el => el.uid === uid);
+
+                    let usersFollowers = snapshot.docs.map(doc =>{
+                        const followerId = doc.id;
+                        return {followerId, user, uid};
+                    })
+                    dispatch({type: USERS_FOLLOWERS_STATE_CHANGE, usersFollowers})
+                }
+            })
     })
 }
 export function fetchUsersFollowingLikes(uid, postId) {
@@ -144,16 +183,5 @@ export function fetchUsersFollowingLikes(uid, postId) {
             dispatch({type: USERS_LIKES_STATE_CHANGE, postId ,currentUserLike});
             // console.log(getState());
         })
-    })
-}
-export function fetchFollowers(uid){
-    return((dispatch, getState) => {
-        firebase.firestore()
-            .collection("following")
-            .forEach((doc) => {
-                doc.collection("userFollowing").forEach((doc) => {
-                    console.log(doc);
-                })
-            })
     })
 }

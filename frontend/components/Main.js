@@ -3,7 +3,7 @@ import {View, StyleSheet, Text} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { bindActionCreators } from 'redux';
-import {fetchUser, fetchUserPosts, fetchUserFollowing, fetchClearData} from '../redux/actions/index';
+import {fetchUser, fetchUserPosts, fetchUserFollowing,fetchUserFollowers, fetchClearData} from '../redux/actions/index';
 import {connect} from 'react-redux';
 import firebase from 'firebase';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -27,6 +27,7 @@ export class Main extends Component {
         this.props.fetchUser();
         this.props.fetchUserPosts();
         this.props.fetchUserFollowing();
+        this.props.fetchUserFollowers();
     }
     render() {
         const {currentUser} = this.props;
@@ -91,7 +92,7 @@ export class Main extends Component {
                     listeners = {({ navigation }) => ({
                         tabPress: event => {
                             event.preventDefault();
-                            navigation.navigate("Profile" , {uid: firebase.auth().currentUser.uid, refresh: true});
+                            navigation.navigate("Profile" , {uid: firebase.auth().currentUser.uid});
                         }
                     })} 
                     options= {{
@@ -125,7 +126,7 @@ const mapStateToProps = (store) => ({
     posts: store.userState.posts,
     fetchUserFollowing: store.userState.following,
 })
-const mapDispatchToProps = (dispatch) => bindActionCreators({fetchUser, fetchUserPosts, fetchUserFollowing,fetchClearData}, dispatch);
+const mapDispatchToProps = (dispatch) => bindActionCreators({fetchUser, fetchUserPosts, fetchUserFollowing,fetchUserFollowers,fetchClearData}, dispatch);
 export default connect(mapStateToProps, mapDispatchToProps)(Main);
 
 const styles = StyleSheet.create({

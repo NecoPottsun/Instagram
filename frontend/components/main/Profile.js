@@ -5,15 +5,16 @@ import Feather from 'react-native-vector-icons/Feather';
 import firebase from 'firebase'
 
 import { connect } from 'react-redux';
-
-
+import { bindActionCreators } from 'redux';
+import { fetchUserFollowers } from '../../redux/actions/index'
 
 function Profile(props) {
   const {landscape} = useDeviceOrientation();
   const [userPosts, setUserPosts] = useState([]);
   const [user, setUser] = useState(null);
   const [following,setFollowing] = useState(false);
-  const [refresh, setRefresh] = useState(false);
+  const [followers, setFollowers] = useState([]);
+  const [followingOtherUsers, setFollowingOtherUsers] = useState([]);
 
   useLayoutEffect(() => {
     if(props.route.params.uid === firebase.auth().currentUser.uid){
@@ -40,13 +41,15 @@ function Profile(props) {
   useEffect(() => {
     const {currentUser, posts} = props;
     // console.log("users: " + props.users)
-    console.log("following: " +props.following)
+
     // const post = {...posts};
-    getFollowers();
+
     if(props.route.params.uid === firebase.auth().currentUser.uid){
       setUser(currentUser);
       setUserPosts(posts);
- 
+      setFollowers(props.followers);
+      setFollowingOtherUsers(props.following);
+
     }
     else{
       firebase.firestore()
@@ -76,8 +79,32 @@ function Profile(props) {
           setUserPosts(posts);
           
         })
-       
+      firebase.firestore()
+        .collection("following")
+        .doc(props.route.params.uid)
+        .collection("userFollower")
+        .onSnapshot((snapshot) => {
+          let followers = snapshot.docs.map(doc => {
+            const uid = doc.id;
+            return uid;
+          })
+          setFollowers(followers);
+          
+        })
+      firebase.firestore()
+        .collection("following")
+        .doc(props.route.params.uid)
+        .collection("userFollowing")
+        .onSnapshot((snapshot) => {
+          let followingOtherUsers = snapshot.docs.map(doc => {
+            const uid = doc.id;
+            return uid;
+          })
+          setFollowingOtherUsers(followingOtherUsers);
+
+        })
         
+
     }
     
     if(props.following.indexOf(props.route.params.uid) > -1){
@@ -88,27 +115,39 @@ function Profile(props) {
     }
     
 
-  }, [props.route.params.uid, props.following,props.currentUser,props.users]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
+  }, [props.route.params.uid, props.following,props.currentUser,props.users,props.followers]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
   
   
 
   const onUnfollow = () => {
     firebase.firestore()
-    .collection("following")
-    .doc(firebase.auth().currentUser.uid)
-    .collection("userFollowing")
-    .doc(props.route.params.uid)
-    .delete();
+      .collection("following")
+      .doc(firebase.auth().currentUser.uid)
+      .collection("userFollowing")
+      .doc(props.route.params.uid)
+      .delete();
     setFollowing(false);
+    firebase.firestore()
+      .collection("following")
+      .doc(props.route.params.uid)
+      .collection("userFollower")
+      .doc(firebase.auth().currentUser.uid)
+      .delete();
   }
   const onFollow = () => {
     firebase.firestore()
-    .collection("following")
-    .doc(firebase.auth().currentUser.uid)
-    .collection("userFollowing")
-    .doc(props.route.params.uid)
-    .set({});
+      .collection("following")
+      .doc(firebase.auth().currentUser.uid)
+      .collection("userFollowing")
+      .doc(props.route.params.uid)
+      .set({});
     setFollowing(true);
+    firebase.firestore()
+      .collection("following")
+      .doc(props.route.params.uid)
+      .collection("userFollower")
+      .doc(firebase.auth().currentUser.uid)
+      .set({});
 
   }
 
@@ -131,11 +170,11 @@ function Profile(props) {
               <Text>Posts</Text>
             </View>
             <View style = {styles.containerUpperInfoRightPane}>
-              <Text style= {{fontWeight: 'bold'}}>0</Text>
+              <Text style= {{fontWeight: 'bold'}}>{followers.length}</Text>
               <Text>Followers</Text>
             </View>
             <View style = {styles.containerUpperInfoRightPane}>
-              <Text style= {{fontWeight: 'bold'}}>{props.following.length}</Text>
+              <Text style= {{fontWeight: 'bold'}}>{followingOtherUsers.length}</Text>
               <Text>Following</Text>
             </View>
           </View>
@@ -195,10 +234,11 @@ const mapStateToProps = (store) => ({
   currentUser: store.userState.currentUser,
   posts: store.userState.posts, 
   following: store.userState.following,
+  followers: store.userState.followers,
   users: store.usersState.users,
 })
 
-// not calling anyaction so mapDispatchToProps = null
+
 export default connect(mapStateToProps, null)(Profile);
 
 const styles = StyleSheet.create({

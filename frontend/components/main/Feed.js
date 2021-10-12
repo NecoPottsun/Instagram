@@ -32,7 +32,7 @@ function Feed(props) {
       // }
       setRefresh(false);
     }
-  }, [refresh,props.usersFollowingLoaded, props.feed]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
+  }, [refresh,props.usersFollowingLoaded, props.feed,props.users]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
   
 
 
@@ -120,6 +120,7 @@ const mapStateToProps = (store) => ({
   currentUserPosts : store.userState.posts,
   following: store.userState.following,
   feed: store.usersState.feed,
+  users: store.usersState.users,
   usersFollowingLoaded: store.usersState.usersFollowingLoaded,
 })
 
