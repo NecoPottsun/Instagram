@@ -22,6 +22,7 @@ import AddScreen from './components/main/Add';
 import SaveScreen from './components/main/Save';
 import CommentsScreen from './components/main/Comments';
 import EditScreen from './components/main/Edit';
+import EditAvatarScreen from './components/main/EditAvatar';
 
 const Stack = createNativeStackNavigator();
 
@@ -86,6 +87,7 @@ export class App extends Component {
               <Stack.Screen name = "Save" component={SaveScreen}/>
               <Stack.Screen name = "Comments" component={CommentsScreen}/>
               <Stack.Screen name = "Edit" component = {EditScreen} navigation = {this.props.navigation}/>
+              <Stack.Screen name = "EditAvatar" component = {EditAvatarScreen} options= {{headerShown: false}}/>
             </Stack.Navigator>
           </NavigationContainer>
         </Provider>

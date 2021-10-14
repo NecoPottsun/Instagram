@@ -18,7 +18,7 @@ function Comments(props) {
 
     const imageWidth = Math.floor(useWindowDimensions().width);
     useEffect(() => {
-        console.log(props.route.params.post.user.uid);
+        
         function matchUserToComment(comments){
             for( let i = 0; i < comments.length ; i++){
                 if(comments[i].hasOwnProperty('user')){
@@ -33,6 +33,7 @@ function Comments(props) {
                 }
             }
             setComments(comments);
+            console.log(comments);
             
         }
 
@@ -59,6 +60,7 @@ function Comments(props) {
         })
 
         setRefresh(false);
+        
 
 
     },[refresh,props.route.params.post.id,props.users]) 
@@ -103,11 +105,28 @@ function Comments(props) {
                     horizontal = {false}
                     data = {comments}
                     renderItem = {({item}) => 
-                        <View style = {styles.userCommentContainer}>
-                            {item.userCommentInfo !== undefined ? 
-                                <Text style = {styles.usernameText}>{item.userCommentInfo.name}</Text>
-                            : <Text style = {styles.usernameText}>{item.userCommentId}</Text>}
-                            <Text>{item.text}</Text>
+                        <View style = {[styles.userCommentContainer]}>
+                            <View style = {{flexDirection: 'row',alignItems:'center',justifyContent:'center'}}>
+
+                                {item.userCommentInfo !== undefined ? 
+                                    <Image 
+                                        style = {styles.avatar}
+                                        source ={item.userCommentInfo.avatarURL === "" ? 
+                                        {uri:"https://i.mydramalist.com/q65BQ_3f.jpg"}
+                                        :
+                                        {uri: item.userCommentInfo.avatarURL}
+                                        }
+                                    />         
+                                : null}
+                                {item.userCommentInfo !== undefined ? 
+                                    <Text style = {styles.usernameText}>{item.userCommentInfo.name}</Text>
+                                : <Text style = {styles.usernameText}>{item.userCommentId}</Text>}
+                            </View>
+                            <View style = {{flex: 1,flexDirection:'column',justifyContent:'center'}}>
+                                <Text style = {{flex:1,}}
+                                    numberOfLines={10}>{item.text}</Text>
+                            </View>
+                
                         </View>
                         
                 
@@ -145,6 +164,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginRight: 8,
         
+        
     },
     commentContainer: {
         flexDirection: 'row',
@@ -164,5 +184,18 @@ const styles = StyleSheet.create({
     },
     userCommentContainer: {
         flexDirection: 'row',
+        justifyContent: 'center',alignItems: 'center'
+        
     },
+    avatar:{
+        overflow: 'hidden',
+        width: 35,
+        height: 35,
+        borderRadius: 150/2,
+        borderWidth: 1,
+        borderColor:'#ebebeb',
+        margin: 5,
+        marginRight: 8,
+        
+      }, 
 });

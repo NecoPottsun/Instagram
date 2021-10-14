@@ -3,10 +3,11 @@ import {View, Text, StyleSheet, Button, Image, FlatList, useWindowDimensions,Tou
 import { useDeviceOrientation } from '@react-native-community/hooks';
 import Feather from 'react-native-vector-icons/Feather';
 import firebase from 'firebase'
+import { IconButton, Colors } from 'react-native-paper';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { fetchUserFollowers } from '../../redux/actions/index'
+import { fetchFollowersData } from '../../redux/actions/index'
 
 function Profile(props) {
   const {landscape} = useDeviceOrientation();
@@ -16,6 +17,7 @@ function Profile(props) {
   const [followers, setFollowers] = useState([]);
   const [followingOtherUsers, setFollowingOtherUsers] = useState([]);
 
+  const [submit, setSubmit] = useState(false);
   useLayoutEffect(() => {
     if(props.route.params.uid === firebase.auth().currentUser.uid){
       props.navigation.setOptions({
@@ -24,13 +26,23 @@ function Profile(props) {
             <Feather name="lock" color={'#5B5B5B'} size = {20} options />
             <Text style = {[styles.headerUsernameText,{marginLeft:10,}]}>{props.currentUser.username}</Text>
           </View>
-        )
+        ),
+        headerLeft: false,
       })
     }
     else{
       props.navigation.setOptions({
         headerTitle: () => (
           <Text style = {styles.headerUsernameText}>{props.route.params.username}</Text>
+          ),
+        headerLeft: () => (
+          <IconButton
+            icon = "keyboard-backspace"
+            color="#3c3c3c"
+            size={30}
+            style = {{padding: 15}}
+            onPress={() => setSubmit(true)}
+          />
         )
       })
     }
@@ -39,15 +51,15 @@ function Profile(props) {
 
 
   useEffect(() => {
-    const {currentUser, posts} = props;
-    // console.log("users: " + props.users)
-
-    // const post = {...posts};
-
+    const {currentUser, posts , currentUserFollowers} = props;
+    if(submit){
+      props.navigation.goBack();
+    }
     if(props.route.params.uid === firebase.auth().currentUser.uid){
       setUser(currentUser);
       setUserPosts(posts);
-      setFollowers(props.followers);
+      console.log(currentUserFollowers);
+      matchFollowerData(currentUserFollowers);
       setFollowingOtherUsers(props.following);
 
     }
@@ -88,7 +100,7 @@ function Profile(props) {
             const uid = doc.id;
             return uid;
           })
-          setFollowers(followers);
+          matchFollowerData(followers);
           
         })
       firebase.firestore()
@@ -104,7 +116,26 @@ function Profile(props) {
 
         })
         
-
+      
+    }
+    function matchFollowerData (followers){
+      for(let i = 0; i < followers.length; i++){
+        if(followers[i].hasOwnProperty('followerInfo')){
+          continue;
+        }
+        const user = props.followers.find(x => x.uid === followers[i])
+        console.log(user);
+        console.log(followers[i])
+        if(user === undefined){
+          props.fetchFollowersData(followers[i])
+        }
+        else{
+          followers[i] = {followerInfo: user};
+        }
+        
+      }
+      setFollowers(followers);
+      console.log(followers);
     }
     
     if(props.following.indexOf(props.route.params.uid) > -1){
@@ -114,10 +145,18 @@ function Profile(props) {
       setFollowing(false);
     }
     
+    return () => {
+      setSubmit(false)
+      // setUserPosts([]);
+      // setUser(null);
+      // setFollowing(false);
+      // setFollowers([]);
+      // setFollowingOtherUsers([]);
+      
+    }
 
-  }, [props.route.params.uid, props.following,props.currentUser,props.users,props.followers]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
-  
-  
+  }, [submit,props.route.params.uid, props.following,props.currentUser,props.users,props.followers,props.currentUserFollowers]) // need to add [...uid] because when props.route.params.uid is updated, the useEffect will be used, otherwise, it will run in an infinity loop
+ 
 
   const onUnfollow = () => {
     firebase.firestore()
@@ -162,7 +201,11 @@ function Profile(props) {
         <View style = {styles.containerUpperInfo}>
           <Image 
             style = {styles.avatar}
-            source ={{uri:"https://i.mydramalist.com/q65BQ_3f.jpg"}}
+            source ={user.avatarURL === "" ? 
+                      {uri:"https://i.mydramalist.com/q65BQ_3f.jpg"}
+                      :
+                      {uri: user.avatarURL}
+                    }
           />
           <View style = {{flexDirection:'row',flex: 1}}>
             <View style = {styles.containerUpperInfoRightPane}>
@@ -232,14 +275,16 @@ function Profile(props) {
 
 const mapStateToProps = (store) => ({
   currentUser: store.userState.currentUser,
+  currentUserFollowers: store.userState.followers,
   posts: store.userState.posts, 
   following: store.userState.following,
-  followers: store.userState.followers,
+  followers: store.usersState.followers,
   users: store.usersState.users,
 })
 
+const mapDispatchToProps = (dispatch) => bindActionCreators({fetchFollowersData}, dispatch);
 
-export default connect(mapStateToProps, null)(Profile);
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);
 
 const styles = StyleSheet.create({
     container: {

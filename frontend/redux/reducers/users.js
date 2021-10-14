@@ -1,8 +1,9 @@
-import {USERS_DATA_STATE_CHANGE,USERS_POSTS_STATE_CHANGE,CLEAR_DATA,USERS_LIKES_STATE_CHANGE} from '../constants/index'
+import {USERS_DATA_STATE_CHANGE,USERS_POSTS_STATE_CHANGE,FOLLOWERS_DATA_STATE_CHANGE,CLEAR_DATA,USERS_LIKES_STATE_CHANGE} from '../constants/index'
 
 const initialState = { 
     users: [],
     feed: [],
+    followers: [],
     usersFollowingLoaded: 0,
 
 }
@@ -14,6 +15,11 @@ export const users = (state = initialState , action) => {
                 ...state,
                 users : [...state.users, action.user],
             }
+        case FOLLOWERS_DATA_STATE_CHANGE: 
+            return{ 
+                ...state,
+                followers: [...state.followers, action.follower],
+            }    
         case USERS_POSTS_STATE_CHANGE:
             return{
                 ...state,

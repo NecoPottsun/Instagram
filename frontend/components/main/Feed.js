@@ -70,7 +70,17 @@ function Feed(props) {
           data = {posts}
           renderItem = {({item}) => (
             <View style = {styles.postContainer}>
-              <Text style = {[styles.usernameText,{padding: 10, paddingLeft: 20,}]}>{item.user.name}</Text>
+              <View style = {{flexDirection: 'row'}}>
+                <Image 
+                  style = {styles.avatar}
+                  source ={item.user.avatarURL === "" ? 
+                    {uri:"https://i.mydramalist.com/q65BQ_3f.jpg"}
+                    :
+                    {uri: item.user.avatarURL}
+                  }
+                />
+                <Text style = {[styles.usernameText,{padding: 10,}]}>{item.user.name}</Text>
+              </View>
               <Image style = {styles.image,{width: imageWidth, height: imageWidth}}
                 source= {{uri:item.downloadURL}}
               />
@@ -142,6 +152,16 @@ const styles = StyleSheet.create({
       color: '#423f3f',
       textAlign:'center',
     },
+    avatar:{
+      overflow: 'hidden',
+      width: 35,
+      height: 35,
+      borderRadius: 150/2,
+      borderWidth: 1,
+      borderColor:'#ebebeb',
+      margin: 5,
+      marginRight: 8,
+    }, 
     containerInfo: {
       margin: 20,
     }, 

@@ -1,4 +1,4 @@
-import {USER_STATE_CHANGE, USER_POST_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE,USER_FOLLOWERS_STATE_CHANGE,USERS_FOLLOWERS_STATE_CHANGE ,USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA,USERS_LIKES_STATE_CHANGE} from '../constants/index';
+import {USER_STATE_CHANGE, USER_POST_STATE_CHANGE, USER_FOLLOWING_STATE_CHANGE,USER_FOLLOWERS_STATE_CHANGE,FOLLOWERS_DATA_STATE_CHANGE,USERS_FOLLOWERS_STATE_CHANGE ,USERS_DATA_STATE_CHANGE, USERS_POSTS_STATE_CHANGE, CLEAR_DATA,USERS_LIKES_STATE_CHANGE} from '../constants/index';
 import firebase from 'firebase';
 
 require('firebase/firestore')
@@ -153,7 +153,6 @@ export function fetchUsersFollowers(uid){
                 }
                 else{
                     const uid = snapshot.docs[0].ref.path.split('/')[1];
-                    console.log({snapshot,uid});
                     const user = getState().usersState.users.find(el => el.uid === uid);
 
                     let usersFollowers = snapshot.docs.map(doc =>{
@@ -183,5 +182,33 @@ export function fetchUsersFollowingLikes(uid, postId) {
             dispatch({type: USERS_LIKES_STATE_CHANGE, postId ,currentUserLike});
             // console.log(getState());
         })
+    })
+}
+export function fetchFollowersData(uid){
+    return((dispatch, getState) => {
+        console.log(uid);
+        if(uid === ""){
+
+        }
+        else{
+            const found = getState().usersState.followers.some(el => el.uid === uid)
+            if(!found){
+                firebase.firestore()
+                    .collection("users")
+                    .doc(uid)
+                    .onSnapshot((snapshot) =>{
+                        if(snapshot.exists){
+                            let follower = snapshot.data();
+                            follower.uid = snapshot.id;
+                            console.log(follower);
+                            dispatch({type: FOLLOWERS_DATA_STATE_CHANGE, follower})
+                        }
+                        else{
+                            console.log("data not exist");
+                        }
+                    })
+            }
+
+        }
     })
 }

@@ -5,7 +5,7 @@ import firebase from 'firebase'
 
 import { connect } from 'react-redux';
 
-function Edit(props, {navigation}) {
+function Edit(props) {
     const [name, setName] = useState('');
     const [username, setUsername] = useState("");
     const [website, setWebsite] = useState("");
@@ -33,7 +33,14 @@ function Edit(props, {navigation}) {
             alert("Save");
             props.navigation.navigate('Profile', {uid: firebase.auth().currentUser.uid});
         }
-        setSubmit(false);
+        return () => {
+            setName("");
+            setUsername("");
+            setWebsite("");
+            setBio("");
+            setSubmit(false);
+
+        }
     }, [props.currentUser, submit])
 
     useLayoutEffect(() => {
@@ -55,11 +62,11 @@ function Edit(props, {navigation}) {
             <View style = {styles.headerContainer}>
                 <Image 
                     style = {styles.avatar}
-                    source ={{uri:"https://i.mydramalist.com/q65BQ_3f.jpg"}}
+                    source ={{uri:props.currentUser.avatarURL}}
                 />
                 <View style = {styles.profileText}>
                     <Text>{props.currentUser.email}</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress = {() => props.navigation.navigate("EditAvatar")}>
                         <Text style= {styles.changeProfilePhotoText}>
                             Change Profile Photo
                         </Text>
