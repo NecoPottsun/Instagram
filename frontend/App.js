@@ -23,6 +23,7 @@ import SaveScreen from './components/main/Save';
 import CommentsScreen from './components/main/Comments';
 import EditScreen from './components/main/Edit';
 import EditAvatarScreen from './components/main/EditAvatar';
+import SaveAvatarPhoto from './components/main/avatar/SaveAvatarPhoto';
 
 const Stack = createNativeStackNavigator();
 
@@ -88,6 +89,7 @@ export class App extends Component {
               <Stack.Screen name = "Comments" component={CommentsScreen}/>
               <Stack.Screen name = "Edit" component = {EditScreen} navigation = {this.props.navigation}/>
               <Stack.Screen name = "EditAvatar" component = {EditAvatarScreen} options= {{headerShown: false}}/>
+              <Stack.Screen name = "SaveAvatarPhoto" component = {SaveAvatarPhoto} options = {{ title: 'Photo'}}/>
             </Stack.Navigator>
           </NavigationContainer>
         </Provider>

@@ -106,26 +106,29 @@ function Comments(props) {
                     data = {comments}
                     renderItem = {({item}) => 
                         <View style = {[styles.userCommentContainer]}>
-                            <View style = {{flexDirection: 'row',alignItems:'center',justifyContent:'center'}}>
+                            {item.userCommentInfo !== undefined ? 
+                                <Image 
+                                    style = {[styles.avatar,{alignItems:'flex-start',alignSelf:'flex-start'}]}
+                                    source ={item.userCommentInfo.avatarURL === "" ? 
+                                    {uri:"https://i.mydramalist.com/q65BQ_3f.jpg"}
+                                    :
+                                    {uri: item.userCommentInfo.avatarURL}
+                                    }
+                                />         
+                            : null}
+                            <View style = {{flexDirection: 'row', flex: 1}}>
+                                <Text style= {{flexWrap: 'wrap', flexDirection:'row',  overflow:'hidden' }} numberOfLines={10}>
 
-                                {item.userCommentInfo !== undefined ? 
-                                    <Image 
-                                        style = {styles.avatar}
-                                        source ={item.userCommentInfo.avatarURL === "" ? 
-                                        {uri:"https://i.mydramalist.com/q65BQ_3f.jpg"}
-                                        :
-                                        {uri: item.userCommentInfo.avatarURL}
-                                        }
-                                    />         
-                                : null}
-                                {item.userCommentInfo !== undefined ? 
-                                    <Text style = {styles.usernameText}>{item.userCommentInfo.name}</Text>
-                                : <Text style = {styles.usernameText}>{item.userCommentId}</Text>}
+                                    {item.userCommentInfo !== undefined ? 
+                                        <Text style = {styles.usernameText}>{item.userCommentInfo.name}</Text>
+                                    : <Text style = {styles.usernameText}>{item.userCommentId}</Text>}
+                                    <Text style = {{alignSelf:'flex-start' ,overflow:'hidden'}}
+                                        numberOfLines={10}>{item.text}</Text>
+
+                                </Text>
+                            
                             </View>
-                            <View style = {{flex: 1,flexDirection:'column',justifyContent:'center'}}>
-                                <Text style = {{flex:1,}}
-                                    numberOfLines={10}>{item.text}</Text>
-                            </View>
+                        
                 
                         </View>
                         
@@ -184,7 +187,8 @@ const styles = StyleSheet.create({
     },
     userCommentContainer: {
         flexDirection: 'row',
-        justifyContent: 'center',alignItems: 'center'
+        alignItems: 'center',
+        margin: 5,
         
     },
     avatar:{
@@ -194,7 +198,6 @@ const styles = StyleSheet.create({
         borderRadius: 150/2,
         borderWidth: 1,
         borderColor:'#ebebeb',
-        margin: 5,
         marginRight: 8,
         
       }, 
